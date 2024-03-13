@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  app:
+    image: nave3/laravel-template:app-11.x_php8.3
+    container_name: laravel11.x_app
+    build:
+      context: .
+      dockerfile: docker/app/php8_3.Dockerfile
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "5173:5173"
+    depends_on:
+      - db
+    tty: true

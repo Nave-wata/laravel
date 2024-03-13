@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  nginx:
+    image: nave3/laravel-template:nginx-11.x
+    container_name: laravel11.x_nginx
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    volumes:
+      - ./public:/var/www/html/public
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    tty: true
+
+  db:
+    image: nave3/laravel-template:db-11.x
+    container_name: laravel11.x_db
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
+    volumes:
+      - ./docker/db/data:/var/lib/mysql
+    environment:
+      MARIADB_DATABASE: app
+      MARIADB_ROOT_PASSWORD: pass
+    ports:
+      - "3306:3306"
+    tty: true
+
+  phpmyadmin:
+    image: nave3/laravel-template:phpmyadmin-11.x
+    container_name: laravel11.x_phpmyadmin
+    build:
+      context: .
+      dockerfile: ./docker/phpmyadmin/Dockerfile
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: pass
+      PMA_VERBOSE: phpmyadmin
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    tty: true

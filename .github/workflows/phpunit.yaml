@@ -1,0 +1,45 @@
+name: phpunit
+
+on:
+  pull_request:
+    paths:
+      - "**.php"
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mariadb:10.11
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: pass
+        options: >-
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # 開発環境のPHPバージョンを指定
+          php-version: "8.2"
+          tools: composer:v2
+      - name: Copy .env
+        run: cp .env.example .env
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Generate key
+        run: php artisan key:generate
+      - name: Create Database
+        run: mysql --protocol=tcp -h localhost -P 3306 -u root -ppass -e "CREATE DATABASE IF NOT EXISTS testing"
+      - name: Execute tests (Unit and Feature tests) via PHPUnit
+        env:
+          DB_DATABASE: testing
+          DB_PASSWORD: pass
+        run: vendor/bin/phpunit
